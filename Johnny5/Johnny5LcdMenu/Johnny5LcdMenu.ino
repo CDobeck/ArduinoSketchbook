@@ -79,7 +79,7 @@ byte button_status[NUM_KEYS];
 byte button_flag[NUM_KEYS];
 
 // menu definition
-char menu_items[NUM_MENU_ITEM][13]={
+char menu_items[NUM_MENU_ITEM][13] = {
   "TEMPERATURE",
   "CHAR MAP",
   "ULTRASONIC",
@@ -102,17 +102,17 @@ void (*menu_funcs[NUM_MENU_ITEM])(void) = {
 char current_menu_item;
 
 //////////SETUP//////////SETUP//////////SETUP//////////SETUP//////////SETUP//////////SETUP//////////
-void setup()
-{
+void setup() {
+  
     //startup for SSC_32
     Serial.begin(115200);
 
   // setup interrupt-driven keypad arrays  
   // reset button arrays
-  for(byte i=0; i<NUM_KEYS; i++){
-    button_count[i]=0;
-    button_status[i]=0;
-    button_flag[i]=0;
+  for(byte i = 0; i < NUM_KEYS; i++) {
+    button_count[i] = 0;
+    button_status[i] = 0;
+    button_flag[i] = 0;
   }
 
   // Setup timer2 -- Prescaler/256
@@ -147,21 +147,21 @@ void setup()
 }
 
 //////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////
-void loop()
-{
-  byte i, page;
-  for(i=0; i<NUM_KEYS; i++){
-    if(button_flag[i] !=0){
+void loop() {
 
-      button_flag[i]=0;  // reset button flag
-      switch(i){
+  byte i, page;
+  for(i = 0; i < NUM_KEYS; i++){
+    if(button_flag[i] != 0){
+
+      button_flag[i] = 0;  // reset button flag
+      switch(i) {
 
       case UP_KEY:
         // current item to normal display
         lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_NORMAL );
-        current_menu_item -=1;
-        if(current_menu_item <0)  current_menu_item = NUM_MENU_ITEM -1;
-        if(current_menu_item == NUM_MENU_ITEM -1 || current_menu_item % MAX_MENU_ITEMS == MAX_MENU_ITEMS-1) {
+        current_menu_item -= 1;
+        if(current_menu_item < 0)  current_menu_item = NUM_MENU_ITEM - 1;
+        if(current_menu_item == NUM_MENU_ITEM - 1 || current_menu_item % MAX_MENU_ITEMS == MAX_MENU_ITEMS - 1) {
           init_MENU(current_menu_item / MAX_MENU_ITEMS, current_menu_item);
         } else {
         // next item to highlight display
@@ -171,11 +171,12 @@ void loop()
       case DOWN_KEY:
         // current item to normal display
         lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_NORMAL );
-        current_menu_item +=1;
-        if(current_menu_item >(NUM_MENU_ITEM-1))  current_menu_item = 0;
+        current_menu_item += 1;
+        if(current_menu_item >(NUM_MENU_ITEM - 1))  current_menu_item = 0;
         if(current_menu_item == 0 || current_menu_item % MAX_MENU_ITEMS == 0) {
           init_MENU(current_menu_item / MAX_MENU_ITEMS, current_menu_item);
-        } else {
+        }
+        else {
         // next item to highlight display
         lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_HIGHLIGHT );
         }
@@ -204,14 +205,13 @@ void loop()
         current_menu_item = 0;           
         break;	
       }
-
     }
   }
 }
 
 //////////Menu Functions//////////Menu Functions//////////Menu Functions//////////Menu Functions//////////
 
-void init_MENU(byte page, char current){
+void init_MENU(byte page, char current) {
   byte start = page * MAX_MENU_ITEMS;
   byte i = start;
   String titlePage = "PAGE: ";
@@ -234,34 +234,33 @@ void init_MENU(byte page, char current){
 }
 
 // waiting for center key press
-void waitfor_OKkey(){
+void waitfor_OKkey() {
   byte i;
   byte key = 0xFF;
-  while (key!= CENTER_KEY){
-    for(i=0; i<NUM_KEYS; i++){
-      if(button_flag[i] !=0){
-        button_flag[i]=0;  // reset button flag
-        if(i== CENTER_KEY) key=CENTER_KEY;
+  while (key != CENTER_KEY) {
+    for(i = 0; i < NUM_KEYS; i++) {
+      if(button_flag[i] != 0) {
+        button_flag[i] = 0;  // reset button flag
+        if(i == CENTER_KEY) key = CENTER_KEY;
       }
     }
   }
-
 }
 
-int isEnterKeyPressed(){
+int isEnterKeyPressed() {
   byte i;
   byte key = 0xFF;
-    for(i=0; i<NUM_KEYS; i++){
-      if(button_flag[i] !=0){
-        button_flag[i]=0;  // reset button flag
-        if(i== CENTER_KEY) return 1;
+    for(i = 0; i < NUM_KEYS; i++) {
+      if(button_flag[i] != 0) {
+        button_flag[i] = 0;  // reset button flag
+        if(i == CENTER_KEY) return 1;
       }
     }
     return 0;
 }
 
-void temperature()
-{
+void temperature() {
+
   //accelerometer testing code inside here
 //  initializeAccel();
   lcd.LCD_write_string_big(10, 1, "+12.30", MENU_NORMAL);
@@ -271,17 +270,15 @@ void temperature()
   waitfor_OKkey();
 }
 
-void charmap(){
-  char i,j;
-  for(i=0; i<5; i++){
-    for(j=0; j<14; j++){
+void charmap() {
+  char i, j;
+  for(i = 0; i < 5; i++){
+    for(j = 0; j < 14; j++){
       delay(50);
-      lcd.LCD_set_XY(j*6,i);
-      lcd.LCD_write_char(i*14+j+32, MENU_NORMAL);
+      lcd.LCD_set_XY(j * 6, i);
+      lcd.LCD_write_char(i * 14 + j + 32, MENU_NORMAL);
     }
   }
-
-
   lcd.LCD_write_string(38, 5, "OK", MENU_HIGHLIGHT );
   waitfor_OKkey();   
 }
@@ -294,7 +291,7 @@ void charmap(){
 //}
 
 
-void testUltraSonic(){
+void testUltraSonic() {
     
   while(!isEnterKeyPressed()) {
     //Gets raw value
@@ -310,7 +307,7 @@ void testUltraSonic(){
     str.toCharArray(array, 8);
   
     lcd.LCD_write_string( 3, 2, "Dis_CM:", MENU_NORMAL);
-    lcd.LCD_write_string(32, 5, " OK ", MENU_HIGHLIGHT );
+    lcd.LCD_write_string(32, 5, " OK ", MENU_HIGHLIGHT);
     lcd.LCD_write_string( 45, 2, "    ", MENU_NORMAL);
     lcd.LCD_write_string( 45, 2, array, MENU_NORMAL);
   
@@ -327,7 +324,7 @@ void testUltraSonic(){
 void about(){
   lcd.LCD_write_string( 0, 1, "LCD4884 Shield", MENU_NORMAL);
   lcd.LCD_write_string( 0, 3, "www.sainsmart.com", MENU_NORMAL);
-  lcd.LCD_write_string(38, 5, "OK", MENU_HIGHLIGHT );
+  lcd.LCD_write_string(38, 5, "OK", MENU_HIGHLIGHT);
   
   int noteDuration;
     // iterate over the notes of the melody:
@@ -358,18 +355,18 @@ void testSensors() {
     char name[8];
     String str = "A" + String(i) + ":";
     str.toCharArray(name, 8);
-    lcd.LCD_write_string( 0, i, name, MENU_NORMAL);
+    lcd.LCD_write_string(0, i, name, MENU_NORMAL);
   }
   lcd.LCD_write_string(54, 5, " OK ", MENU_HIGHLIGHT );
   
   while(!isEnterKeyPressed()) { 
     for(int i = 0; i < NUM_SENSORS; i++) {  
-      lcd.LCD_write_string( 20, i, "    ", MENU_NORMAL);
+      lcd.LCD_write_string(20, i, "    ", MENU_NORMAL);
       int sensor = analogRead(i);
       char array[8];
       String str = String(sensor);
       str.toCharArray(array, 8);
-      lcd.LCD_write_string( 20, i, array, MENU_NORMAL);
+      lcd.LCD_write_string(20, i, array, MENU_NORMAL);
     }
     delay(50);
   }
@@ -413,15 +410,11 @@ void LCD_cover_data( long data_tem,char *nomber_s){
 // which includes DEBOUNCE ON/OFF mechanism, and continuous pressing detection
 
 // Convert ADC value to key number
-char get_key(unsigned int input)
-{
+char get_key(unsigned int input) {
   char k;
 
-  for (k = 0; k < NUM_KEYS; k++)
-  {
-    if (input < adc_key_val[k])
-    {
-
+  for (k = 0; k < NUM_KEYS; k++) {
+    if (input < adc_key_val[k]) {
       return k;
     }
   }
@@ -432,44 +425,34 @@ char get_key(unsigned int input)
   return k;
 }
 
-void update_adc_key(){
+void update_adc_key() {
   int adc_key_in;
   char key_in;
   byte i;
 
   adc_key_in = analogRead(0);
   key_in = get_key(adc_key_in);
-  for(i=0; i<NUM_KEYS; i++)
-  {
-    if(key_in==i)  //one key is pressed 
-    { 
-      if(button_count[i]<DEBOUNCE_MAX)
-      {
+  for(i = 0; i < NUM_KEYS; i++) {
+    if(key_in == i) {  //one key is pressed 
+      if(button_count[i] < DEBOUNCE_MAX) {
         button_count[i]++;
-        if(button_count[i]>DEBOUNCE_ON)
-        {
-          if(button_status[i] == 0)
-          {
+        if(button_count[i] > DEBOUNCE_ON) {
+          if(button_status[i] == 0) {
             button_flag[i] = 1;
             button_status[i] = 1; //button debounced to 'pressed' status
           }
-
         }
       }
-
     }
-    else // no button pressed
-    {
-      if (button_count[i] >0)
-      {  
+    else { // no button pressed
+      if (button_count[i] > 0) {  
         button_flag[i] = 0;	
         button_count[i]--;
-        if(button_count[i]<DEBOUNCE_OFF){
-          button_status[i]=0;   //button debounced to 'released' status
+        if(button_count[i]<DEBOUNCE_OFF) {
+          button_status[i] = 0;   //button debounced to 'released' status
         }
       }
     }
-
   }
 }
 
@@ -477,10 +460,7 @@ void update_adc_key(){
 // 1/(160000000/256/(256-6)) = 4ms interval
 
 ISR(TIMER2_OVF_vect) {  
-  TCNT2  = 6;
+  TCNT2 = 6;
   update_adc_key();
 }
-
-
-
 
