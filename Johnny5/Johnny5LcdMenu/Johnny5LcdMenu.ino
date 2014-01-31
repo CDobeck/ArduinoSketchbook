@@ -1,16 +1,11 @@
 
 /*
-Modified by jacky
-version 0.3
+Editor: Cary Dobeck
 
-Any suggestions are welcome.
-E-mail: jacky@gmail.com
+TO-DO: clean up code and remove any
 
-Editor     : Lauren from SainSmart
-Date       : 06.01.2012
-
-* Update the library and sketch to compatible with IDE V1.0 and earlier
-
+Original version from Jacky at jacky@gmail.com, and Lauren from SainSmart
+Original Date: 06.01.2012
 */
 
 //BotBoarduino Manual (Based on Arduino Duemilanove)
@@ -32,11 +27,11 @@ Date       : 06.01.2012
 
 // notes in the melody:
 int melody[] = {
-  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,0, NOTE_B3, NOTE_C4};
+  NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4};
 
 // note durations: 4 = quarter note, 8 = eighth note, etc.:
 byte noteDurations[] = {
-  4, 8, 8, 4,4,4,4,4 };
+  4, 8, 8, 4, 4, 4, 4, 4};
 
 //Library for UltraSonic Sensor
 #include <UltraSonic.h>
@@ -47,7 +42,7 @@ byte noteDurations[] = {
 //keypad debounce parameter
 #define DEBOUNCE_MAX 15
 #define DEBOUNCE_ON  10
-#define DEBOUNCE_OFF 3 
+#define DEBOUNCE_OFF  3 
 
 #define NUM_KEYS 5
 
@@ -57,19 +52,19 @@ byte noteDurations[] = {
 #define MAX_MENU_ITEMS 5
 
 // joystick number
-#define LEFT_KEY 0
-#define CENTER_KEY 1
-#define DOWN_KEY 2
-#define RIGHT_KEY 3
-#define UP_KEY 4
+#define LEFT_KEY    0
+#define CENTER_KEY  1
+#define DOWN_KEY    2
+#define RIGHT_KEY   3
+#define UP_KEY      4
 
 // menu starting points
 
-#define MENU_X	10		// 0-83
-#define MENU_Y	1		// 0-5
+#define MENU_X  10		// 0 - 83
+#define MENU_Y   1		// 0 - 5
 
 int  adc_key_val[5] ={
-  50, 200, 400, 600, 800 };
+  50, 200, 400, 600, 800};
 
 // debounce counters
 byte button_count[NUM_KEYS];
@@ -80,13 +75,13 @@ byte button_flag[NUM_KEYS];
 
 // menu definition
 char menu_items[NUM_MENU_ITEM][13] = {
-  "TEMPERATURE",
-  "CHAR MAP",
-  "ULTRASONIC",
-  "ABOUT",
-  "TEST SENSORS",
-  "TEST CODE",
-  "INIT ROBOT"	
+  "Temperature",
+  "Char Map",
+  "UltraSonic",
+  "About",
+  "Test Sensors",
+  "Test Code",
+  "Init Robot"	
 };
 
 void (*menu_funcs[NUM_MENU_ITEM])(void) = {
@@ -116,22 +111,22 @@ void setup() {
   }
 
   // Setup timer2 -- Prescaler/256
-  TCCR2A &= ~((1<<WGM21) | (1<<WGM20));
-  TCCR2B &= ~(1<<WGM22);
-  TCCR2B = (1<<CS22)|(1<<CS21);      
+  TCCR2A &= ~((1 << WGM21) | (1 << WGM20));
+  TCCR2B &= ~(1 << WGM22);
+  TCCR2B = (1 << CS22) | (1 << CS21);      
 
-  ASSR |=(0<<AS2);
+  ASSR |= (0 << AS2);
 
   // Use normal mode  
-  TCCR2A =0;    
+  TCCR2A = 0;    
   //Timer2 Overflow Interrupt Enable  
-  TIMSK2 |= (0<<OCIE2A);
-  TCNT2=0x6;  // counting starts from 6;  
-  TIMSK2 = (1<<TOIE2);    
+  TIMSK2 |= (0 << OCIE2A);
+  TCNT2= 0x6;  // counting starts from 6;  
+  TIMSK2 = (1 << TOIE2);    
 
 
 
-  SREG|=1<<SREG_I;
+  SREG |= 1 << SREG_I;
 
   lcd.LCD_init();
   lcd.LCD_clear();
@@ -140,7 +135,7 @@ void setup() {
   init_MENU(0, 0);
   current_menu_item = 0;	
 
-  lcd.backlight(ON);//Turn on the backlight
+  lcd.backlight(ON);    // Turn on the backlight
   //lcd.backlight(OFF); // Turn off the backlight  
 
   ultrasonic.initialize();
@@ -149,61 +144,66 @@ void setup() {
 //////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////LOOP//////////
 void loop() {
 
-  byte i, page;
+  byte i;
+  char page;
   for(i = 0; i < NUM_KEYS; i++){
     if(button_flag[i] != 0){
-
       button_flag[i] = 0;  // reset button flag
+      
       switch(i) {
-
-      case UP_KEY:
-        // current item to normal display
-        lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_NORMAL );
-        current_menu_item -= 1;
-        if(current_menu_item < 0)  current_menu_item = NUM_MENU_ITEM - 1;
-        if(current_menu_item == NUM_MENU_ITEM - 1 || current_menu_item % MAX_MENU_ITEMS == MAX_MENU_ITEMS - 1) {
-          init_MENU(current_menu_item / MAX_MENU_ITEMS, current_menu_item);
-        } else {
-        // next item to highlight display
-        lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_HIGHLIGHT );
-        }
-        break;
-      case DOWN_KEY:
-        // current item to normal display
-        lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_NORMAL );
-        current_menu_item += 1;
-        if(current_menu_item >(NUM_MENU_ITEM - 1))  current_menu_item = 0;
-        if(current_menu_item == 0 || current_menu_item % MAX_MENU_ITEMS == 0) {
-          init_MENU(current_menu_item / MAX_MENU_ITEMS, current_menu_item);
-        }
-        else {
-        // next item to highlight display
-        lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_HIGHLIGHT );
-        }
-        break;
-      case LEFT_KEY:
-        page = (current_menu_item / MAX_MENU_ITEMS - 1);
-        if (page == 255) {    //255 because it is a byte, no negative numbers
-          page = NUM_MENU_ITEM / MAX_MENU_ITEMS;
-        }
-        current_menu_item = page * MAX_MENU_ITEMS;
-        init_MENU(page, current_menu_item);
-        break;   
-      case RIGHT_KEY:
-        page = (current_menu_item / MAX_MENU_ITEMS) + 1;
-        if ( page > NUM_MENU_ITEM / MAX_MENU_ITEMS) {
-           page = 0; 
-        }
-        current_menu_item = page * MAX_MENU_ITEMS;
-        init_MENU(page, current_menu_item);
-        break;
-      case CENTER_KEY:
-        lcd.LCD_clear();
-        (*menu_funcs[current_menu_item])();
-        lcd.LCD_clear();
-        init_MENU(0, 0);
-        current_menu_item = 0;           
-        break;	
+        case UP_KEY:
+          // unhighlight the previous selection
+          lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_NORMAL);
+          --current_menu_item;
+          if(current_menu_item < 0)
+            current_menu_item = NUM_MENU_ITEM - 1;
+          if(current_menu_item == NUM_MENU_ITEM - 1 || current_menu_item % MAX_MENU_ITEMS == MAX_MENU_ITEMS - 1) {
+            init_MENU(current_menu_item / MAX_MENU_ITEMS, current_menu_item);
+          } else {
+            // highlight the new selection
+            lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_HIGHLIGHT);
+          }
+          break;
+        
+        case DOWN_KEY:
+          // unhighlight the previous selection
+          lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_NORMAL);
+          ++current_menu_item;
+          if(current_menu_item >(NUM_MENU_ITEM - 1))  current_menu_item = 0;
+          if(current_menu_item == 0 || current_menu_item % MAX_MENU_ITEMS == 0) {
+            init_MENU(current_menu_item / MAX_MENU_ITEMS, current_menu_item);
+          }
+          else {
+            // highlight the new selection
+            lcd.LCD_write_string(MENU_X, MENU_Y + current_menu_item % MAX_MENU_ITEMS, menu_items[current_menu_item], MENU_HIGHLIGHT);
+          }
+          break;
+          
+        case LEFT_KEY:
+          page = current_menu_item / MAX_MENU_ITEMS - 1;
+          if (page == -1) {
+            page = NUM_MENU_ITEM / MAX_MENU_ITEMS;
+          }
+          current_menu_item = page * MAX_MENU_ITEMS;
+          init_MENU(page, current_menu_item);
+          break;   
+          
+        case RIGHT_KEY:
+          page = current_menu_item / MAX_MENU_ITEMS + 1;
+          if (page > NUM_MENU_ITEM / MAX_MENU_ITEMS) {
+             page = 0; 
+          }
+          current_menu_item = page * MAX_MENU_ITEMS;
+          init_MENU(page, current_menu_item);
+          break;
+          
+        case CENTER_KEY:
+          lcd.LCD_clear();
+          (*menu_funcs[current_menu_item])();
+          lcd.LCD_clear();
+          init_MENU(0, 0);
+          current_menu_item = 0;           
+          break;	
       }
     }
   }
@@ -214,23 +214,21 @@ void loop() {
 void init_MENU(byte page, char current) {
   byte start = page * MAX_MENU_ITEMS;
   byte i = start;
-  String titlePage = "PAGE: ";
-  titlePage += (page+1);
+  String titlePage = "Page: ";
+  titlePage += page + 1;
   titlePage += " of ";
-  titlePage += (NUM_MENU_ITEM / MAX_MENU_ITEMS + 1);
-  char titleArray[titlePage.length()+1];
-  titlePage.toCharArray(titleArray, titlePage.length()+1);
+  titlePage += NUM_MENU_ITEM / MAX_MENU_ITEMS + 1;
+  char titleArray[titlePage.length() + 1];
+  titlePage.toCharArray(titleArray, titlePage.length() + 1);
   
   lcd.LCD_clear();
 
-//  lcd.LCD_write_string(MENU_X, MENU_Y, menu_items[i], MENU_HIGHLIGHT );
-
-  lcd.LCD_write_string(2,0, titleArray, MENU_NORMAL);
-  for (i; i < min(NUM_MENU_ITEM, ((page+1)*MAX_MENU_ITEMS)); i++){
-    lcd.LCD_write_string(MENU_X, MENU_Y+i-start, menu_items[i], MENU_NORMAL);
+  lcd.LCD_write_string(2, 0, titleArray, MENU_NORMAL);
+  for (; i < min(NUM_MENU_ITEM, ((page + 1) * MAX_MENU_ITEMS)); i++){
+    lcd.LCD_write_string(MENU_X, MENU_Y + i - start, menu_items[i], MENU_NORMAL);
   }
 
-  lcd.LCD_write_string(MENU_X, MENU_Y + current % MAX_MENU_ITEMS, menu_items[current], MENU_HIGHLIGHT );
+  lcd.LCD_write_string(MENU_X, MENU_Y + current % MAX_MENU_ITEMS, menu_items[current], MENU_HIGHLIGHT);
 }
 
 // waiting for center key press
@@ -321,7 +319,7 @@ void testUltraSonic() {
   }
 }
 
-void about(){
+void about() {
   lcd.LCD_write_string( 0, 1, "LCD4884 Shield", MENU_NORMAL);
   lcd.LCD_write_string( 0, 3, "www.sainsmart.com", MENU_NORMAL);
   lcd.LCD_write_string(38, 5, "OK", MENU_HIGHLIGHT);
@@ -333,7 +331,7 @@ void about(){
     // to calculate the note duration, take one second 
     // divided by the note type.
     //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    noteDuration = 1000/noteDurations[thisNote];
+    noteDuration = 1000 / noteDurations[thisNote];
     tone(11, melody[thisNote], noteDuration);
 
     // to distinguish the notes, set a minimum time between them.
@@ -370,7 +368,6 @@ void testSensors() {
     }
     delay(50);
   }
-  //  waitfor_OKkey();
 }
 
 void testCode() {
@@ -379,7 +376,6 @@ void testCode() {
     tone(11, microseconds, 100);
   }
   noTone(11);
-  
 }
 
 void initRobot() {
@@ -448,7 +444,7 @@ void update_adc_key() {
       if (button_count[i] > 0) {  
         button_flag[i] = 0;	
         button_count[i]--;
-        if(button_count[i]<DEBOUNCE_OFF) {
+        if(button_count[i] < DEBOUNCE_OFF) {
           button_status[i] = 0;   //button debounced to 'released' status
         }
       }
