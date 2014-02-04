@@ -270,14 +270,18 @@ void temperature() {
 
 void charmap() {
   char i, j;
+  int numTone = 200;
   for(i = 0; i < 5; i++){
     for(j = 0; j < 14; j++){
-      delay(50);
+      delay(25);
       lcd.LCD_set_XY(j * 6, i);
       lcd.LCD_write_char(i * 14 + j + 32, MENU_NORMAL);
+      tone(11, numTone);
+      numTone += 5;
     }
   }
   lcd.LCD_write_string(38, 5, "OK", MENU_HIGHLIGHT );
+  noTone(11);
   waitfor_OKkey();   
 }
 
@@ -319,11 +323,8 @@ void testUltraSonic() {
   }
 }
 
-void about() {
-  lcd.LCD_write_string( 0, 1, "LCD4884 Shield", MENU_NORMAL);
-  lcd.LCD_write_string( 0, 3, "www.sainsmart.com", MENU_NORMAL);
-  lcd.LCD_write_string(38, 5, "OK", MENU_HIGHLIGHT);
-  
+void testMusic() {
+//    noInterrupts();
   int noteDuration;
     // iterate over the notes of the melody:
   for (int thisNote = 0; thisNote < 8; thisNote++) {
@@ -340,11 +341,17 @@ void about() {
     delay(pauseBetweenNotes);
 //    delay(noteDuration);
     // stop the tone playing:
-//    noTone(10);
   }
   noTone(11);
   moveServo(16, 2000);
+//  interrupts();
+}
 
+void about() {
+  lcd.LCD_write_string( 0, 1, "LCD4884 Shield", MENU_NORMAL);
+  lcd.LCD_write_string( 0, 3, "www.sainsmart.com", MENU_NORMAL);
+  lcd.LCD_write_string(38, 5, "OK", MENU_HIGHLIGHT);
+  testMusic();
   waitfor_OKkey();
 }
 
