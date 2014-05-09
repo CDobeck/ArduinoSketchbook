@@ -2,7 +2,7 @@
 /*
 Editor: Cary Dobeck
 
-TO-DO: clean up code and remove any
+TO-DO: clean up code, it's all long, ugly and hard to find things
 
 Original version from Jacky at jacky@gmail.com, and Lauren from SainSmart
 Original Date: 06.01.2012
@@ -63,8 +63,7 @@ byte noteDurations[] = {
 #define MENU_X  10		// 0 - 83
 #define MENU_Y   1		// 0 - 5
 
-int  adc_key_val[5] ={
-  50, 200, 400, 600, 800};
+int adc_key_val[5] ={50, 200, 400, 600, 800};
 
 // debounce counters
 byte button_count[NUM_KEYS];
@@ -96,6 +95,26 @@ void (*menu_funcs[NUM_MENU_ITEM])(void) = {
 
 char current_menu_item;
 
+void initTimer2() {
+     // Setup timer2 -- Prescaler/256
+  TCCR2A &= ~((1 << WGM21) | (1 << WGM20));
+  TCCR2B &= ~(1 << WGM22);
+  TCCR2B = (1 << CS22) | (1 << CS21);    //set prescaler to 1/256  
+
+  ASSR |= (0 << AS2);    //sets timer to internal clock
+
+  // Use normal mode  
+  TCCR2A = 0;    
+  //Timer2 Overflow Interrupt Enable  
+  TIMSK2 |= (0 << OCIE2A);
+  TCNT2 = 0x6;  // counting starts from 6;  
+  
+  //enable timer in overflow interrupt enable
+  TIMSK2 = (1 << TOIE2);    
+
+  SREG |= (1 << SREG_I);
+}
+
 //////////SETUP//////////SETUP//////////SETUP//////////SETUP//////////SETUP//////////SETUP//////////
 void setup() {
   
@@ -110,23 +129,7 @@ void setup() {
     button_flag[i] = 0;
   }
 
-  // Setup timer2 -- Prescaler/256
-  TCCR2A &= ~((1 << WGM21) | (1 << WGM20));
-  TCCR2B &= ~(1 << WGM22);
-  TCCR2B = (1 << CS22) | (1 << CS21);      
-
-  ASSR |= (0 << AS2);
-
-  // Use normal mode  
-  TCCR2A = 0;    
-  //Timer2 Overflow Interrupt Enable  
-  TIMSK2 |= (0 << OCIE2A);
-  TCNT2= 0x6;  // counting starts from 6;  
-  TIMSK2 = (1 << TOIE2);    
-
-
-
-  SREG |= 1 << SREG_I;
+  initTimer2();
 
   lcd.LCD_init();
   lcd.LCD_clear();
@@ -324,9 +327,11 @@ void testUltraSonic() {
 }
 
 void testMusic() {
-//    noInterrupts();
   int noteDuration;
     // iterate over the notes of the melody:
+    // disable timer2 for full speed playback
+    TIMSK2 &= ~(1 << TOIE2);    
+
   for (int thisNote = 0; thisNote < 8; thisNote++) {
 
     // to calculate the note duration, take one second 
@@ -339,12 +344,11 @@ void testMusic() {
     // the note's duration + 30% seems to work well:
     int pauseBetweenNotes = noteDuration * 1.30;
     delay(pauseBetweenNotes);
-//    delay(noteDuration);
     // stop the tone playing:
   }
   noTone(11);
-  moveServo(16, 2000);
-//  interrupts();
+    // re-enable timer2 for buttons
+    TIMSK2 |= (1 << TOIE2);    
 }
 
 void about() {
@@ -463,7 +467,7 @@ void update_adc_key() {
 // 1/(160000000/256/(256-6)) = 4ms interval
 
 ISR(TIMER2_OVF_vect) {  
-  TCNT2 = 6;
+  TCNT2 = 0x6;
   update_adc_key();
 }
 
