@@ -390,9 +390,19 @@ void testCode() {
 }
 
 void initRobot() {
-  for(byte i = 0; i < NUM_SERVOS; i++) {
-    moveServo(i, 1500, 500);
+//  for(byte i = 0; i < NUM_SERVOS; i++) {
+//    moveServo(i, 1500, 500);
+//  }
+  uint16_t i = 0;
+  while (1) {
+    moveServoBin(13, 0x01);
+    delay(1000);
+    moveServoBin(13, 0xFFFE);
+    delay(750);
   }
+//  moveServoBin(16, 0x03E8);
+
+
 }
 
 /*

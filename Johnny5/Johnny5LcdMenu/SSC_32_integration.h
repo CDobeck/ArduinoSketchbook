@@ -29,3 +29,14 @@ void moveServo(byte servo, int pos) {
     Serial.print(" P");
     Serial.println(pos);
 }
+
+//NOTE, 0x00 and 0xFFFF turn off servo, but 0xFFFF has jitter
+void moveServoBin(uint8_t servo, uint16_t pos) {
+  Serial.write(0x80 + servo);
+  Serial.write((pos >> 8) & 0xFF);
+  Serial.write(pos & 0xFF);
+  Serial.write(0xA1);
+  Serial.write(0x00);
+  Serial.write(0x00);
+  Serial.write(0x0D);
+}
